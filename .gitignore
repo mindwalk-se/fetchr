@@ -1,0 +1,6 @@
+.DS_Store
+.idea
+config/mail.php
+config/repositories.php
+vendor
+db
