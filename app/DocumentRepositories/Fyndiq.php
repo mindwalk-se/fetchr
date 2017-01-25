@@ -5,6 +5,11 @@ use Mindwalk\DocumentRepository;
 
 class Fyndiq extends DocumentRepository
 {
+    protected function getFilePrefix()
+    {
+        return 'fyndiq';
+    }
+
     public function get(array $config)
     {
         $this->login($config['username'], $config['password']);

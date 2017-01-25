@@ -21,27 +21,34 @@ class DocumentFetcher
 
         foreach ($this->repositories as $repository) {
             $repositoryObject = new $repository['repository'];
-            $filename = $repositoryObject->get($repository);
-            $hash = $this->getHash($repository, $filename);
+            $filenames = $repositoryObject->get($repository);
 
-            if ($this->database->exists($hash)) {
-                continue;
+            if (!is_array($filenames)) {
+                $filenames = [ $filenames ];
             }
 
-            $this->database->store($hash);
+            foreach ($filenames as $filename) {
+                $hash = $this->getHash($repository, $filename);
 
-            if (empty($repository['recipients'])) {
-                continue;
-            }
-
-            $temporaryFilenames[] = $filename;
-
-            foreach ($repository['recipients'] as $recipient) {
-                if (!isset($mailData[$recipient])) {
-                    $mailData[$recipient] = [];
+                if ($this->database->exists($hash)) {
+                    continue;
                 }
 
-                $mailData[$recipient][] = $filename;
+                $this->database->store($hash);
+
+                if (empty($repository['recipients'])) {
+                    continue;
+                }
+
+                $temporaryFilenames[] = $filename;
+
+                foreach ($repository['recipients'] as $recipient) {
+                    if (!isset($mailData[$recipient])) {
+                        $mailData[$recipient] = [];
+                    }
+
+                    $mailData[$recipient][] = $filename;
+                }
             }
         }
 
@@ -73,7 +80,7 @@ class DocumentFetcher
 
     private function getHash(array $repository, $filename)
     {
-        return sha1(serialize($repository) . $filename);
+        return sha1(serialize($repository) . md5_file($filename));
     }
 
     private function getMail()
@@ -92,7 +99,7 @@ class DocumentFetcher
                 $this->mailConfig['from']['name']
         );
 
-        $mail->Subject = 'New documents';
+        $mail->Subject = 'New documents ' . date('Y-m-d');
         $mail->Body = 'I have attached very important documents for you great master!';
 
         return $mail;

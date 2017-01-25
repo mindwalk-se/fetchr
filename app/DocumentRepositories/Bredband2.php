@@ -5,6 +5,11 @@ use Mindwalk\DocumentRepository;
 
 class Bredband2 extends DocumentRepository
 {
+    protected function getFilePrefix()
+    {
+        return 'bredband2';
+    }
+
     public function get(array $config)
     {
         $this->login($config['username'], $config['password']);
